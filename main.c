@@ -105,11 +105,10 @@ void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
     if(input == 1)
     {
           for(sf_count_t n = 0; n < bufferSize; n++){
-            outBuffer[n] = inBuffer[n]; //Copy input to output
+            outBuffer[n] = inBuffer[n]; 
                 for(int i = 1; i <= kNumEcho; i++){
-                    m = (int)((double)n - (double)i * gDelayTime); //get previous samples based on delayTime and number of echo
+                    m = (int)((double)n - (double)i * gDelayTime); 
                     if(m >= 0){
-                         //Add past audio data to current audio data
                         outBuffer[n] += kMix * pow(kDecay, (double) i) * inBuffer[m];
         }
       }
@@ -125,7 +124,7 @@ void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
             m = (int)t;
             delta = t - (double)m;
     
-            if (m >= 0 && m + 1 < bufferSize){//Mix original signals
+            if (m >= 0 && m + 1 < bufferSize){
                 outBuffer[n] += delta * inBuffer[m + 1] + (1.0 - delta) * inBuffer[m]; 
       }
     }
@@ -133,13 +132,13 @@ void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
     if(input == 3)
     {
         for(sf_count_t n = 0; n < bufferSize; n++){
-            outBuffer[n] = inBuffer[n] * kGain; //Amplify orignal audio data
+            outBuffer[n] = inBuffer[n] * kGain;
             if(outBuffer[n] > 1.0f){
-                outBuffer[n] = 1.0f; //Clip signal to 1
+                outBuffer[n] = 1.0f;
         }       else if(outBuffer[n] < - 1.0f){
-           outBuffer[n] = -1.0; //Clip signal to -1
+           outBuffer[n] = -1.0;
         }
-        outBuffer[n] *= kLevel; //Adjust volume
+        outBuffer[n] *= kLevel;
       }
     }
     if(input == 4)
@@ -163,7 +162,7 @@ void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
   }
     else
       printf("Error: No effect selected");
-      return 1;
+   
 }
 
 int openInputSndFile(SoundFile *sndFile){
