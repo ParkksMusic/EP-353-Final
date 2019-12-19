@@ -27,8 +27,10 @@
 #define kVibDepth 4.0 //Hz
 #define kVibOffset 4.0 //Hz
 #define kVibRate 0.5 //Hz
+//tremolo
+#define kTremDepth 0.5
+#define kTremRate 5.0
 
-//Hold SNDFILE and SF_INFO together
 typedef struct SoundFile {
   SNDFILE *file;
   SF_INFO info;
@@ -44,9 +46,10 @@ int input;
 float gDelayTime = 1.0f; 
 double gOffset, gDepth, gSampleRate;
 
+
 int main(void)
 {
-    printf("What effect would you like to apply to the audio?\n1)Delay\n2)Flanger\n3)Distortion\n4)Vibrato");
+    printf("What effect would you like to apply to the audio?\n1)Delay\n2)Flanger\n3)Distortion\n4)Vibrato\n5)Tremolo\n");
     scanf("%d", &input);
   
   SoundFile inFile, outFile;
@@ -68,7 +71,10 @@ int main(void)
 
   //Set delay time based on the sampling rate
   gDelayTime = inFile.info.samplerate * kDelayTime; //Delay Time
-  
+    
+  //Get sample rate for adjusting the tremolo frequency correctly
+  gSampleRate = inFile.info.samplerate;
+
   // Get vibrato offset and depth. Also sample rate.
   gOffset = inFile.info.samplerate * (kOffset/1000.0);
   gDepth = inFile.info.samplerate * (kDepth/1000.0);
@@ -94,7 +100,10 @@ int main(void)
 void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
   sf_count_t m;
     double rate, t, tau, delta;
-    if(input = 1);
+    double a = 0;
+
+    if(input == 1)
+    {
           for(sf_count_t n = 0; n < bufferSize; n++){
             outBuffer[n] = inBuffer[n]; //Copy input to output
                 for(int i = 1; i <= kNumEcho; i++){
@@ -102,11 +111,12 @@ void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
                     if(m >= 0){
                          //Add past audio data to current audio data
                         outBuffer[n] += kMix * pow(kDecay, (double) i) * inBuffer[m];
+        }
       }
-    }    
+    } 
   }
-    if(input = 2);
-        
+    if(input == 2)
+    {   
         for(sf_count_t n = 0; n < bufferSize; n++){
             outBuffer[n] = inBuffer[n];
     
@@ -117,9 +127,11 @@ void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
     
             if (m >= 0 && m + 1 < bufferSize){//Mix original signals
                 outBuffer[n] += delta * inBuffer[m + 1] + (1.0 - delta) * inBuffer[m]; 
+      }
     }
   }
-    if(input = 3);
+    if(input == 3)
+    {
         for(sf_count_t n = 0; n < bufferSize; n++){
             outBuffer[n] = inBuffer[n] * kGain; //Amplify orignal audio data
             if(outBuffer[n] > 1.0f){
@@ -128,9 +140,10 @@ void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
            outBuffer[n] = -1.0; //Clip signal to -1
         }
         outBuffer[n] *= kLevel; //Adjust volume
-        }
-    if(input = 4);
-
+      }
+    }
+    if(input == 4)
+    {
         for(sf_count_t n = 0; n < bufferSize; n++){
             tau = gOffset + gDepth * sin(2.0 * M_PI * kVibRate * n / gSampleRate);
             t = (double)n - tau;
@@ -140,6 +153,17 @@ void process(float *inBuffer, float *outBuffer, sf_count_t bufferSize){
                 outBuffer[n] = delta * inBuffer[m + 1] + (1.0 - delta) * inBuffer[m]; 
     }
   }
+}
+    if(input == 5)
+    {
+        for(sf_count_t n = 0; n < bufferSize; n++){
+            a = 1.0 + kDepth * sin(2.0 * M_PI * kRate * n / gSampleRate);
+            outBuffer[n] = a * inBuffer[n]; //Copy input to output with tremolo effect    
+    }
+  }
+    else
+      printf("Error: No effect selected");
+      return 1;
 }
 
 int openInputSndFile(SoundFile *sndFile){
